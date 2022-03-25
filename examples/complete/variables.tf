@@ -23,7 +23,7 @@ variable "ado" {
 variable "tier" {
   type        = string
   description = "Canonical name of the application tier"
-  default     = "WEB"
+  default     = "DATA"
 }
 
 variable "cell_name" {
@@ -76,7 +76,7 @@ variable "db_users_privileges" {
     objects    = list(string)
     database   = string
   }))
-
+  default = []
 }
 
 variable "schemas_list_owners" {
@@ -113,7 +113,7 @@ variable "schemas_list_owners" {
     with_usage         = bool
     role_name          = string
   }))
-  default = null
+  default = []
 }
 
 variable "databases_created" {
@@ -122,17 +122,6 @@ variable "databases_created" {
   default     = ["kojitechs"]
 }
 
-variable "db_clusters" {
-  type        = map(any)
-  description = "The AWS DB cluster reference"
-  default = {
-    engine     = "postgres"
-    name       = "kojitechs"
-    port       = 5432
-    dbname     = "usermgmt"
-    identifier = "hqr-database-reporting"
-  }
-}
 
 variable "aws_region" {
   description = "Region to which thos code would be deployed to"
@@ -143,7 +132,7 @@ variable "aws_region" {
 variable "instance_class" {
   description = "hqr db instance class"
   type        = string
-  default     = "db.m4.large"
+  default     = "db.t3.micro"
 }
 
 variable "aws_account_id" {
@@ -186,5 +175,5 @@ variable "tech_poc_secondary" {
 variable "multi_az" {
   description = "Enable multity az for hqr db instance"
   type        = bool
-  default     = null
+  default     = false
 }

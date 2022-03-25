@@ -15,7 +15,7 @@ terraform {
 
 locals {
   master_password        = var.create_db_instance && var.create_random_password ? random_string.master_user_password.result : var.password
-  create_db_option_group = var.create_db_option_group && var.engine != "postgres"
+  create_db_option_group = var.create_db_option_group && var.db_engine != "postgres"
 
   secrets = jsondecode(aws_secretsmanager_secret_version.master_secret_value.secret_string)
   engines_map = {
@@ -24,24 +24,22 @@ locals {
     redshift          = "redshift"
   }
   common_secret_values = {
-    engine     = var.db_clusters.engine
-    port       = var.db_clusters.port
-    dbname     = var.db_clusters.dbname
-    identifier = var.db_clusters.identifier
+    engine     = var.db_engine
+    port       = var.db_port
+    dbname     = var.db_username
+    identifier = format("%s-%s", var.component_name, terraform.workspace)
     password   = random_string.master_user_password.result
   }
   common_tenable_values = {
-    engine   = local.engines_map[var.db_clusters.engine]
+    engine   = local.engines_map[var.db_engine]
     endpoint = aws_db_instance.postgres_rds[0].address
-    port     = var.db_clusters.port
-    dbname   = var.db_clusters.dbname
+    port     = var.db_port
+    dbname   = var.db_username
     password = random_string.master_user_password.result
   }
 }
 
-resource "random_uuid" "shapshot_postfix" {
-
-}
+resource "random_uuid" "shapshot_postfix" {}
 
 resource "random_string" "master_user_password" {
 
@@ -58,8 +56,8 @@ resource "random_password" "users_password" {
 
 resource "aws_secretsmanager_secret" "master_secret" {
 
-  name_prefix             = format("%s_%s", var.component_name, "master_secret")
-  description             = "secret to manage superuser ${var.db_clusters.name} on ${var.db_clusters.identifier} instance"
+  name_prefix             = format("%s-%s-%s", var.component_name, "master-secret", terraform.workspace)
+  description             = "secret to manage superuser ${var.db_username} on ${format("%s-%s", var.component_name, terraform.workspace)} instance"
   recovery_window_in_days = 0
 
 }
@@ -67,15 +65,15 @@ resource "aws_secretsmanager_secret" "master_secret" {
 resource "aws_secretsmanager_secret" "users_secret" {
 
   for_each                = toset(var.db_users)
-  name_prefix             = each.key == var.db_users ? "tenable-${var.component_name}" : var.component_name
-  description             = "secret to manage user credential of ${each.key} on ${var.db_clusters.identifier} instance"
+  name_prefix             = each.key == var.db_users ? "tenable-${format("%s-%s", var.component_name, terraform.workspace)}" : format("%s-%s", var.component_name, terraform.workspace)
+  description             = "secret to manage user credential of ${each.key} on ${format("%s-%s", var.component_name, terraform.workspace)} instance"
   recovery_window_in_days = 0
 
 }
 resource "aws_secretsmanager_secret_version" "master_secret_value" {
 
   secret_id     = aws_secretsmanager_secret.master_secret.id
-  secret_string = jsonencode(merge(local.common_secret_values, { username = var.db_clusters.dbname, password = random_string.master_user_password.result }))
+  secret_string = jsonencode(merge(local.common_secret_values, { username = var.db_username, password = random_string.master_user_password.result }))
 }
 
 # Secrets Manager for all application users that requires a password 
@@ -89,23 +87,21 @@ resource "aws_secretsmanager_secret_version" "user_secret_value" {
 resource "aws_db_instance" "postgres_rds" {
   count = var.create_db_instance ? 1 : 0
 
-  allocated_storage = var.db_storage == null ? 100 : var.db_storage
-  engine            = var.db_clusters.engine
-  engine_version    = var.engine_version == null ? "9.6" : var.engine_version
-  instance_class    = var.instance_class
-
-  port                   = local.secrets["port"]
-  username               = local.secrets["dbname"]
+  allocated_storage      = var.db_storage == null ? 100 : var.db_storage
+  engine                 = var.db_engine == null ? "postgres" : var.db_engine
+  engine_version         = var.engine_version == null ? "13.4" : var.engine_version
+  instance_class         = var.instance_class
+  port                   = var.db_port == null ? 5432 : var.db_port
+  username               = var.db_username == null ? var.db_engine : var.db_username
   password               = local.secrets["password"]
   vpc_security_group_ids = [module.Security_module.this[0]]
 
-  identifier           = var.component_name
+  identifier           = format("%s-%s", var.component_name, terraform.workspace)
   skip_final_snapshot  = var.skip_db_snapshot == null ? false : var.skip_db_snapshot
   publicly_accessible  = var.publicly_accessible == null ? false : var.publicly_accessible
   db_subnet_group_name = aws_db_subnet_group.db_subnets[0].id
   multi_az             = var.multi_az == null ? true : var.multi_az
-
-  tags = {}
+  tags                 = {}
 
   lifecycle {
     ignore_changes = [
@@ -133,15 +129,20 @@ module "Security_module" {
 
   vpc_id         = var.vpc_id
   ingress        = local.ingress
-  description    = "Allow inbound traffic to ${var.component_name}"
-  Sg_description = "Allow inbound traffic to ${var.component_name} db"
-  Tags           = format("%s_%s", var.component_name, "db_sg")
+  description    = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)}"
+  Sg_description = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)} db"
+  Tags           = format("%s-%s-%s", var.component_name, "db-sg", terraform.workspace)
 }
 
 resource "aws_db_subnet_group" "db_subnets" {
   count       = var.create_db_instance ? 1 : 0
-  name_prefix = format("%s_%s", var.component_name, "db_subnets")
+  name_prefix = format("%s-%s-%s", var.component_name, "db-subnets", terraform.workspace)
   subnet_ids  = var.db_subnets
+  lifecycle {
+    ignore_changes = [
+      name_prefix,
+    ]
+  }
 }
 
 provider "postgresql" {
@@ -149,7 +150,7 @@ provider "postgresql" {
   alias            = "pgconnect"
   host             = aws_db_instance.postgres_rds[0].address
   port             = aws_db_instance.postgres_rds[0].port
-  username         = var.db_clusters.dbname
+  username         = var.db_username
   password         = jsondecode(aws_secretsmanager_secret_version.master_secret_value.secret_string)["password"]
   superuser        = false
   sslmode          = "require"
@@ -166,7 +167,6 @@ resource "postgresql_database" "postgres" {
   depends_on        = [aws_db_instance.postgres_rds]
 }
 
-# (contains(var.databases_created, each.value.database)? each.value.database : "postgres"
 resource "postgresql_schema" "my_schema" {
   for_each = {
     for schema, value in var.schemas_list_owners : schema => value
@@ -201,7 +201,6 @@ resource "postgresql_role" "users" {
 }
 
 resource "postgresql_grant" "user_privileges" {
-
   for_each = {
     for idx, user_privileges in var.db_users_privileges : idx => user_privileges
     if contains(var.db_users, user_privileges.user)

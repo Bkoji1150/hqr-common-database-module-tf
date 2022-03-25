@@ -50,15 +50,16 @@ module "required_tags" {
   application_owner       = var.application_owner
   vpc                     = var.cell_name
   cell_name               = var.cell_name
-  component_name          = var.component_name
+  component_name          = format("%s-%s", var.component_name, terraform.workspace)
 
 }
 
+
 module "rds_module" {
-  source = "../.."
+  source = "../.." # "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
 
   tier           = var.tier
-  component_name = var.component_name
+  component_name = format("%s-%s", var.component_name, terraform.workspace)
   engine_version = var.engine_version
   instance_class = var.instance_class
   db_users       = var.db_users
@@ -69,10 +70,9 @@ module "rds_module" {
   cidr_blocks_sg      = ["0.0.0.0/0"]
   vpc_id              = var.vpc_id
   db_subnets          = var.db_subnets
-
+  db_port             = "5444"
   schemas_list_owners = var.schemas_list_owners
-  db_clusters         = var.db_clusters
+  db_username         = "kojitechs"
   db_users_privileges = var.db_users_privileges
   databases_created   = var.databases_created
-
 }

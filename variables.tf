@@ -113,7 +113,14 @@ variable "db_users_privileges" {
     objects    = list(string)
     database   = string
   }))
-  default = null
+  default = [{
+    user       = "postgres"
+    type       = "table"
+    schema     = "tenable_schema"
+    privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]
+    objects    = []
+    database   = "postgres"
+  }]
 }
 
 variable "schemas_list_owners" {
@@ -150,20 +157,17 @@ variable "schemas_list_owners" {
     with_usage         = bool
     role_name          = string
   }))
-  default = null
-}
-
-variable "tenable_user" {
-  description = "RDS Teneble users"
-  type        = string
-  default     = null
-}
-
-
-variable "db_clusters" {
-  type        = map(any)
-  description = "The AWS DB cluster reference"
-
+  default = [
+    {
+      database           = "postgres"
+      name_of_theschema  = "tenable_schema"
+      onwer              = "postgres"
+      usage              = true
+      role               = null
+      with_create_object = true
+      with_usage         = true
+      role_name          = "postgres"
+  }]
 }
 
 variable "cidr_blocks_sg" {
@@ -174,7 +178,7 @@ variable "cidr_blocks_sg" {
 variable "databases_created" {
   description = "List of all databases Created by postgres provider!!!"
   type        = list(string)
-  default     = null
+  default     = ["tenable"]
 }
 
 # Required Tags variables
@@ -224,7 +228,7 @@ variable "multi_az" {
   default     = null
 }
 
-variable "engine" {
+variable "db_engine" {
   description = "The database engine to use"
   type        = string
   default     = "postgres"
@@ -233,4 +237,16 @@ variable "engine" {
 variable "db_subnets" {
   description = "The database db sunbet to use"
   type        = list(any)
+}
+
+variable "db_username" {
+  description = "Username for the master DB user"
+  type        = string
+  default     = null
+}
+
+variable "db_port" {
+  description = "The port on which the DB accepts connections"
+  type        = string
+  default     = null
 }
