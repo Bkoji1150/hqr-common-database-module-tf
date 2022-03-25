@@ -13,35 +13,11 @@ terraform {
   }
 }
 
-provider "aws" {
-  region  = var.aws_region
-  profile = "default"
-
-  assume_role {
-    role_arn = "arn:aws:iam::${lookup(var.aws_account_id, terraform.workspace)}:role/Role_For-S3_Creation"
-  }
-  default_tags {
-    tags = module.required_tags.aws_default_tags
-  }
-}
-
-terraform {
-  required_version = ">=1.1.5"
-
-  backend "s3" {
-    bucket = "hqr.common.database.module.kojitechs.tf"
-    key    = "path/env"
-    region = "us-east-1"
-  }
-}
-
 locals {
-  default_tags    = module.required_tags.aws_default_tags
-  master_password = var.create_db_instance && var.create_random_password ? random_string.master_user_password.result : var.password
-  #   db_subnet_group_name   = !var.cross_region_replica && var.replicate_source_db != null ? null : coalesce(var.db_subnet_group_name, aws_db_subnet_group.flour_rds_subnetgroup[0].id, var.identifie)
+  master_password        = var.create_db_instance && var.create_random_password ? random_string.master_user_password.result : var.password
   create_db_option_group = var.create_db_option_group && var.engine != "postgres"
-  db_tenable_user        = "postgres_aa2"
-  secrets                = jsondecode(aws_secretsmanager_secret_version.master_secret_value.secret_string)
+
+  secrets = jsondecode(aws_secretsmanager_secret_version.master_secret_value.secret_string)
   engines_map = {
     aurora-postgresql = "postgres"
     postgres          = "postgres"
@@ -61,23 +37,6 @@ locals {
     dbname   = var.db_clusters.dbname
     password = random_string.master_user_password.result
   }
-}
-
-module "required_tags" {
-  source = "git::git@github.com:Bkoji1150/kojitechs-tf-aws-required-tags.git"
-
-  line_of_business        = var.line_of_business
-  ado                     = var.ado
-  tier                    = var.tier
-  operational_environment = upper(terraform.workspace)
-  tech_poc_primary        = var.tech_poc_primary
-  tech_poc_secondary      = var.tech_poc_secondary
-  application             = "Database"
-  builder                 = var.builder
-  application_owner       = var.application_owner
-  vpc                     = var.cell_name
-  cell_name               = var.cell_name
-  component_name          = var.component_name
 }
 
 resource "random_uuid" "shapshot_postfix" {
@@ -130,9 +89,9 @@ resource "aws_secretsmanager_secret_version" "user_secret_value" {
 resource "aws_db_instance" "postgres_rds" {
   count = var.create_db_instance ? 1 : 0
 
-  allocated_storage = var.db_storage
+  allocated_storage = var.db_storage == null ? 100 : var.db_storage
   engine            = var.db_clusters.engine
-  engine_version    = var.engine_version
+  engine_version    = var.engine_version == null ? "9.6" : var.engine_version
   instance_class    = var.instance_class
 
   port                   = local.secrets["port"]
@@ -140,13 +99,14 @@ resource "aws_db_instance" "postgres_rds" {
   password               = local.secrets["password"]
   vpc_security_group_ids = [module.Security_module.this[0]]
 
-  identifier          = var.component_name
-  skip_final_snapshot = var.skip_db_snapshot
-  publicly_accessible = true
-  #db_subnet_group_name = aws_db_subnet_group.flour_rds_subnetgroup[0].id
-  multi_az = var.multi_az
+  identifier           = var.component_name
+  skip_final_snapshot  = var.skip_db_snapshot == null ? false : var.skip_db_snapshot
+  publicly_accessible  = var.publicly_accessible == null ? false : var.publicly_accessible
+  db_subnet_group_name = aws_db_subnet_group.db_subnets[0].id
+  multi_az             = var.multi_az == null ? true : var.multi_az
 
   tags = {}
+
   lifecycle {
     ignore_changes = [
       identifier,
@@ -163,7 +123,7 @@ locals {
       from        = local.secrets["port"]
       to          = local.secrets["port"]
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = var.cidr_blocks_sg
     }
   }
 }
@@ -173,16 +133,16 @@ module "Security_module" {
 
   vpc_id         = var.vpc_id
   ingress        = local.ingress
-  description    = "Allow inbound traffic"
-  Sg_description = "Allow inbound traffic to db"
+  description    = "Allow inbound traffic to ${var.component_name}"
+  Sg_description = "Allow inbound traffic to ${var.component_name} db"
   Tags           = format("%s_%s", var.component_name, "db_sg")
 }
 
-# resource "aws_db_subnet_group" "db_subnets" {
-#   count       = var.create_db_instance ? 1 : 0
-#   name_prefix = format("%s_%s", var.component_name, "db_subnets")
-#   subnet_ids = var.db_subnets
-# }
+resource "aws_db_subnet_group" "db_subnets" {
+  count       = var.create_db_instance ? 1 : 0
+  name_prefix = format("%s_%s", var.component_name, "db_subnets")
+  subnet_ids  = var.db_subnets
+}
 
 provider "postgresql" {
 
@@ -199,7 +159,7 @@ provider "postgresql" {
 
 resource "postgresql_database" "postgres" {
 
-  for_each          = toset(var.databases_created)
+  for_each          = toset(var.databases_created == null ? ["tenable_db"] : var.databases_created)
   provider          = postgresql.pgconnect
   name              = each.key
   allow_connections = true

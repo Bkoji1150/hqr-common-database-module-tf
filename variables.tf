@@ -7,38 +7,37 @@ variable "aws_account_id" {
   }
 }
 
-variable "aws_region" {
-  description = "Region to which thos code would be deployed to"
-  type        = string
-  default     = "us-east-1"
+variable "publicly_accessible" {
+  description = "Make database public"
+  type        = bool
+  default     = false
 }
 
 variable "line_of_business" {
   description = "Line of Business"
   type        = string
-  default     = "Kojitechs"
+  default     = null
 }
 variable "ado" {
   description = "Compainy name for this project"
   type        = string
-  default     = "Kojitechs"
+  default     = null
 }
 variable "tier" {
   type        = string
   description = "Canonical name of the application tier"
-  default     = "WEB"
+  default     = null
 }
 
 variable "cell_name" {
   description = "Name of the ECS cluster to deploy the service into."
   type        = string
-  default     = "APP"
+  default     = null
 }
 
 variable "component_name" {
   description = "Name of the component."
   type        = string
-  default     = "hqr-common-database"
 }
 
 variable "create_db_instance" {
@@ -49,8 +48,9 @@ variable "create_db_instance" {
 variable "engine_version" {
   description = "Specifies the major version of the engine that this option group should be associated with"
   type        = string
-  default     = "9.6"
+  default     = null
 }
+
 variable "create_db_option_group" {
   description = "(Optional) Create a database option group"
   type        = bool
@@ -77,7 +77,7 @@ variable "create_random_password" {
 variable "db_users" {
   description = "List of all databases"
   type        = list(any)
-  default     = []
+  default     = null
 }
 
 variable "db_users_privileges" {
@@ -113,7 +113,7 @@ variable "db_users_privileges" {
     objects    = list(string)
     database   = string
   }))
-  default = []
+  default = null
 }
 
 variable "schemas_list_owners" {
@@ -150,112 +150,67 @@ variable "schemas_list_owners" {
     with_usage         = bool
     role_name          = string
   }))
+  default = null
 }
 
 variable "tenable_user" {
   description = "RDS Teneble users"
   type        = string
-  default     = "postgres_aa2"
+  default     = null
 }
 
 
 variable "db_clusters" {
   type        = map(any)
   description = "The AWS DB cluster reference"
-  default = {
-    engine     = "postgres"
-    name       = "cypress_app"
-    port       = 5432
-    dbname     = "cypress_app"
-    identifier = "hqr-database-reporting"
-  }
+
 }
 
-variable "db_initial_id" {
-  description = "database initail id"
-  type        = string
-  default     = "Blesses#default"
-}
-
-variable "service_name" {
-  description = "Name of the service."
-  type        = string
-  default     = "reporting"
+variable "cidr_blocks_sg" {
+  type        = list(any)
+  description = "Provide the cidr block ip to allow connect to db instance"
 }
 
 variable "databases_created" {
-  description = "List of all databases Created!!!"
+  description = "List of all databases Created by postgres provider!!!"
   type        = list(string)
-  default     = ["my_db1", "cypress_test"]
-}
-
-variable "service_tier" {
-  description = "Tier to deploy the service into. APP, WEB, or DATA"
-  type        = string
-  default     = "WEB"
+  default     = null
 }
 
 # Required Tags variables
 variable "application_owner" {
   description = "Email Group for the Application owner."
   type        = string
-  default     = "kojibello058@gmail.com"
+  default     = null
 }
 
 variable "builder" {
   description = "Email for the builder of this infrastructure"
   type        = string
-  default     = "kojibello058@gmail.com"
+  default     = null
 }
 
 variable "tech_poc_primary" {
   description = "Primary Point of Contact for Technical support for this service."
   type        = string
-  default     = "kojibello058@gmail.com"
+  default     = null
 }
 
 variable "tech_poc_secondary" {
   description = "Secondary Point of Contact for Technical support for this service."
   type        = string
-  default     = "kojibello058@gmail.com"
-}
-
-
-variable "max_allocated_storage" {
-  description = "Specifies the value for Storage Autoscaling"
-  type        = number
-  default     = 0
-}
-
-variable "ca_cert_identifier" {
-  description = "Specifies the identifier of the CA certificate for the DB instance"
-  type        = string
   default     = null
-}
-
-variable "delete_automated_backups" {
-  description = "Specifies whether to remove automated backups immediately after the DB instance is deleted"
-  type        = bool
-  default     = true
-}
-
-
-variable "random_password_length" {
-  description = "(Optional) Length of random password to create. (default: 10)"
-  type        = number
-  default     = 10
 }
 
 variable "instance_class" {
   description = "hqr db instance class"
   type        = string
-  default     = "db.m4.large"
 }
 
 variable "db_storage" {
   description = "Database storage in Gb"
   type        = string
-  default     = 300
+  default     = null
 }
 
 variable "skip_db_snapshot" {
@@ -266,11 +221,16 @@ variable "skip_db_snapshot" {
 variable "multi_az" {
   description = "Enable multity az for hqr db instance"
   type        = bool
-  default     = true
+  default     = null
 }
 
 variable "engine" {
   description = "The database engine to use"
   type        = string
   default     = "postgres"
+}
+
+variable "db_subnets" {
+  description = "The database db sunbet to use"
+  type        = list(any)
 }
