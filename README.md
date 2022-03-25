@@ -87,11 +87,11 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 <!-- prettier-ignore-end -->
 # Usage 
 This repository also creates database USERS, creates SCHEMAS and also grant permision to user in a schema using the Postgres provider
-## All db USERS login info could be fectch in secrets Manager 
+### All db USERS login info could be fectch in secrets Manager 
 ```hcl
 db_users = ["USER_NAME"]
 ```
-## Create db schema, Node Schema owner, role_name must be super user like Postgres
+###  Create db schema, Node Schema owner, role_name must be super user like Postgres
 ```hcl
 schemas_list_owners = [
   {
@@ -106,7 +106,7 @@ schemas_list_owners = [
   }
 ]
 ```
-## Manage user's permision in database. Grant Read only && Read Write to a user in a schema
+###  Manage user's permision in database. Grant Read only && Read Write to a user in a schema
 ```hcl
 db_users_privileges = [
   {
@@ -126,4 +126,30 @@ db_users_privileges = [
     objects    = []
   }
 ]
+```
+### Using hqr-common-database Module
+
+```hcl
+
+module "rds_module" {
+  source = "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
+
+  tier           = var.tier
+  component_name = format("%s-%s", var.component_name, terraform.workspace)
+  engine_version = var.engine_version
+  instance_class = var.instance_class
+  db_users       = var.db_users
+  db_storage     = 50
+
+  publicly_accessible = true
+  multi_az            = var.multi_az
+  cidr_blocks_sg      = ["0.0.0.0/0"]
+  vpc_id              = var.vpc_id
+  db_subnets          = var.db_subnets
+  db_port             = "5444"
+  schemas_list_owners = var.schemas_list_owners
+  db_username         = "kojitechs"
+  db_users_privileges = []
+  databases_created   = []
+}
 ```
