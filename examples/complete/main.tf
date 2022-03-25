@@ -75,5 +75,4 @@ module "rds_module" {
   db_users_privileges = var.db_users_privileges
   databases_created   = var.databases_created
 
-
 }
