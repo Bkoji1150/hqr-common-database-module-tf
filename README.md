@@ -90,13 +90,13 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | <a name="output_db_info"></a> [db\_info](#output\_db\_info) | Output db information |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- prettier-ignore-end -->
-## Usage 
-This repository also creates database USERS, creates SCHEMAS and also grand permision to user in a schema using the Postgres provider
-Create db user and fetch the user's login info in secrets Manager 
+# Usage 
+This repository also creates database USERS, creates SCHEMAS and also grant permision to user in a schema using the Postgres provider
+## All db USERS login info could be fectch in secrets Manager 
 ```hcl
 db_users = ["USER_NAME"]
 ```
-Create db schema, Node Schema owner, role_name must be super user like Postgres
+## Create db schema, Node Schema owner, role_name must be super user like Postgres
 ```hcl
 schemas_list_owners = [
   {
@@ -111,7 +111,7 @@ schemas_list_owners = [
   }
 ]
 ```
-Manage user's permision in database. Grant Read only && Read Write to a user in a schema
+## Manage user's permision in database. Grant Read only && Read Write to a user in a schema
 ```hcl
 db_users_privileges = [
   {
