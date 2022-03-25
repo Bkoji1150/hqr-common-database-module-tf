@@ -85,7 +85,9 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_db_info"></a> [db\_info](#output\_db\_info) | Output db information |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- prettier-ignore-end -->
 ## Usage 
