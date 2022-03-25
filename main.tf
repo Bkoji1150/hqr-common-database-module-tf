@@ -231,6 +231,7 @@ resource "postgresql_schema" "my_schema" {
 }
 
 resource "postgresql_role" "users" {
+
   provider   = postgresql.pgconnect
   for_each   = toset(var.db_users)
   name       = each.key
@@ -240,6 +241,7 @@ resource "postgresql_role" "users" {
 }
 
 resource "postgresql_grant" "user_privileges" {
+
   for_each = {
     for idx, user_privileges in var.db_users_privileges : idx => user_privileges
     if contains(var.db_users, user_privileges.user)
