@@ -83,6 +83,49 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | <a name="input_tier"></a> [tier](#input\_tier) | Canonical name of the application tier | `string` | `"WEB"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | vpc id | `string` | n/a | yes |
 
+## Usage 
+This repository also creates database USERS, creates SCHEMAS and also grand permision to user in a schema using the Postgres provider
+# Create db user and fetch the user's login info in secrets Manager 
+```hcl
+db_users = ["USER_NAME"]
+```
+# Create db schema, Node Schema owner, role_name must be super user like Postgres
+```hcl
+schemas_list_owners = [
+  {
+    database           = "DATABASE_NAME"
+    name_of_theschema  "SCHEMA_NAME"
+    onwer              = "postgres"
+    usage              = "bool(true of false)"
+    role               = null
+    with_create_object = "bool(true of false)"
+    with_usage         = "bool(true of false)"
+    role_name          = "postgres"
+  }
+]
+```
+# Manage user's permision in database. Grant Read only && Read Write to a user in a schema
+```hcl
+db_users_privileges = [
+  {
+    database   = "postgres"
+    privileges = ["SELECT"]
+    schema     = "public"
+    type       = "table"
+    user       = "kojitechs"
+    objects    = []
+  },
+  {
+    database   = "postgres"
+    privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]
+    schema     = "public"
+    type       = "table"
+    user       = "kojitechs"
+    objects    = []
+  }
+]
+```
+
 ## Outputs
 
 No outputs.
