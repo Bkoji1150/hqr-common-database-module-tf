@@ -138,7 +138,6 @@ module "rds_module" {
   component_name = format("%s-%s", var.component_name, terraform.workspace)
   engine_version = var.engine_version
   instance_class = var.instance_class
-  db_users       = var.db_users
   db_storage     = 50
 
   publicly_accessible = true
@@ -149,7 +148,9 @@ module "rds_module" {
   db_port             = "5444"
   schemas_list_owners = var.schemas_list_owners
   db_username         = "kojitechs"
+  
   db_users_privileges = []
   databases_created   = []
+  db_users            = []
 }
 ```
