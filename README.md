@@ -85,11 +85,11 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 
 ## Usage 
 This repository also creates database USERS, creates SCHEMAS and also grand permision to user in a schema using the Postgres provider
-# Create db user and fetch the user's login info in secrets Manager 
+Create db user and fetch the user's login info in secrets Manager 
 ```hcl
 db_users = ["USER_NAME"]
 ```
-# Create db schema, Node Schema owner, role_name must be super user like Postgres
+Create db schema, Node Schema owner, role_name must be super user like Postgres
 ```hcl
 schemas_list_owners = [
   {
@@ -104,7 +104,7 @@ schemas_list_owners = [
   }
 ]
 ```
-# Manage user's permision in database. Grant Read only && Read Write to a user in a schema
+Manage user's permision in database. Grant Read only && Read Write to a user in a schema
 ```hcl
 db_users_privileges = [
   {
