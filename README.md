@@ -1,16 +1,16 @@
-# hqr-common-database-module-tf
+## hqr-common-database-module-tf
 This repository creates infrastructure to Database module See [MIGRATION.md](https://github.com/Bkoji1150/hqr-common-database-module-tf.git) for more context.
 
 <!-- prettier-ignore-start -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
+#### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.1.5 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 3.0 |
 
-## Providers
+#### Providers
 
 | Name | Version |
 |------|---------|
@@ -18,13 +18,13 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | <a name="provider_postgresql.pgconnect"></a> [postgresql.pgconnect](#provider\_postgresql.pgconnect) | n/a |
 | <a name="provider_random"></a> [random](#provider\_random) | n/a |
 
-## Modules
+#### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_Security_module"></a> [Security\_module](#module\_Security\_module) | git::git@github.com:Bkoji1150/hqr-security-group.git//Sg | n/a |
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
@@ -42,7 +42,7 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | [random_string.master_user_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [random_uuid.shapshot_postfix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
 
-## Inputs
+#### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -63,7 +63,7 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | <a name="input_db_subnets"></a> [db\_subnets](#input\_db\_subnets) | The database db sunbet to use | `list(any)` | n/a | yes |
 | <a name="input_db_username"></a> [db\_username](#input\_db\_username) | Username for the master DB user | `string` | `null` | no |
 | <a name="input_db_users"></a> [db\_users](#input\_db\_users) | List of all databases | `list(any)` | `null` | no |
-| <a name="input_db_users_privileges"></a> [db\_users\_privileges](#input\_db\_users\_privileges) | If a user in this map does not also exist in the db\_users list, it will be ignored.<br>Example usage of db\_users:<pre>db_users_privileges = [<br>  {<br>    database  = "EXAMPLE POSTGRES"<br>    user       = “example_user1"<br>    type  = “example_type1”<br>    schema     = "example_schema1"<br>    privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]<br>    objects    = [“example_object”]<br>  },<br>  {<br>    database  = "EXAMPLE POSTGRES"<br>    user       = “example_user2"<br>    type       = “example_type2”<br>    schema     = “example_schema2"<br>    privileges = [“SELECT”]<br>    objects    = []<br>  }<br>]</pre>Note: An empty objects list applies the privilege on all database objects matching the type provided.<br>For information regarding types and privileges, refer to: https://www.postgresql.org/docs/13/ddl-priv.html | <pre>list(object({<br>    user       = string<br>    type       = string<br>    schema     = string<br>    privileges = list(string)<br>    objects    = list(string)<br>    database   = string<br>  }))</pre> | <pre>[<br>  {<br>    "database": "postgres",<br>    "objects": [],<br>    "privileges": [<br>      "SELECT",<br>      "INSERT",<br>      "UPDATE",<br>      "DELETE"<br>    ],<br>    "schema": "tenable_schema",<br>    "type": "table",<br>    "user": "postgres"<br>  }<br>]</pre> | no |
+| <a name="input_db_users_privileges"></a> [db\_users\_privileges](#input\_db\_users\_privileges) | If a user in this map does not also exist in the db\_users list, it will be ignored.<br>Example usage of db\_users:<pre>db_users_privileges = [<br>  {<br>    database  = "EXAMPLE POSTGRES"<br>    user = “example_user1"<br> type  = “example_type1”<br>    schema     = "example_schema1"<br>    privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]<br>    objects    = [“example_object”]<br>  },<br>  {<br>    database  = "EXAMPLE POSTGRES"<br>    user       = “example_user2"<br>    type       = “example_type2”<br>    schema     = “example_schema2"<br>    privileges = [“SELECT”]<br>    objects    = []<br>  }<br>]</pre>Note: An empty objects list applies the privilege on all database objects matching the type provided.<br>For information regarding types and privileges, refer to: https://www.postgresql.org/docs/13/ddl-priv.html | <pre>list(object({<br>    user       = string<br>    type       = string<br>    schema     = string<br>    privileges = list(string)<br>    objects    = list(string)<br>    database   = string<br>  }))</pre> | <pre>[<br>  {<br>    "database": "postgres",<br>    "objects": [],<br>    "privileges": [<br>      "SELECT",<br>      "INSERT",<br>      "UPDATE",<br>      "DELETE"<br>    ],<br>    "schema": "tenable_schema",<br>    "type": "table",<br>    "user": "postgres"<br>  }<br>]</pre> | no |
 | <a name="input_engine_version"></a> [engine\_version](#input\_engine\_version) | Specifies the major version of the engine that this option group should be associated with | `string` | `null` | no |
 | <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | hqr db instance class | `string` | n/a | yes |
 | <a name="input_line_of_business"></a> [line\_of\_business](#input\_line\_of\_business) | Line of Business | `string` | `null` | no |
@@ -77,7 +77,7 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | <a name="input_tier"></a> [tier](#input\_tier) | Canonical name of the application tier | `string` | `null` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | vpc id | `string` | n/a | yes |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|
@@ -85,7 +85,7 @@ This repository creates infrastructure to Database module See [MIGRATION.md](htt
 | <a name="output_db_secrets"></a> [db\_secrets](#output\_db\_secrets) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- prettier-ignore-end -->
-# Usage 
+### Usage 
 This repository also creates database USERS, creates SCHEMAS and also grant permision to user in a schema using the Postgres provider
 ### All db USERS login info could be fectch in secrets Manager 
 ```hcl
