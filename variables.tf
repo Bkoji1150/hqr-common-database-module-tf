@@ -175,6 +175,14 @@ variable "cidr_blocks_sg" {
   description = "Provide the cidr block ip to allow connect to db instance"
 }
 
+variable "Another_cidr" {
+  type        = list(any)
+  description = "Provide the cidr block ip to allow connect to db instance"
+  default = [""]
+}
+
+
+
 variable "databases_created" {
   description = "List of all databases Created by postgres provider!!!"
   type        = list(string)
