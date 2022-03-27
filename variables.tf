@@ -178,7 +178,7 @@ variable "cidr_blocks_sg" {
 variable "Another_cidr" {
   type        = list(any)
   description = "Provide the cidr block ip to allow connect to db instance"
-  default = [""]
+ 
 }
 
 
