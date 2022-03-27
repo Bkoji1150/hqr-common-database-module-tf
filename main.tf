@@ -120,6 +120,12 @@ locals {
       to          = local.secrets["port"]
       protocol    = "tcp"
       cidr_blocks = var.cidr_blocks_sg
+    },
+    mysql = {
+      from        = local.secrets["port"]
+      to          = local.secrets["port"]
+      protocol    = "tcp"
+      cidr_blocks = var.Another_cidr
     }
   }
 }
