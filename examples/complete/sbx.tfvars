@@ -1,9 +1,10 @@
 db_users = [
   "max",
-  "philo"
+  "philo",
+  "opk"
 ]
 
-vpc_id = "vpc-0880cca64d0eb856d"
+myipp = ["71.163.242.34/32"]
 
 db_users_privileges = [
   {
@@ -21,6 +22,14 @@ db_users_privileges = [
     type       = "table"
     user       = "philo"
     objects    = []
+  },
+  {
+    database   = "postgres"
+    privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]
+    schema     = "opk_schema"
+    type       = "table"
+    user       = "opk"
+    objects    = []
   }
 ]
 
@@ -34,7 +43,15 @@ schemas_list_owners = [
     with_create_object = true
     with_usage         = true
     role_name          = "kojitechs"
+  },
+  {
+    database           = "postgres"
+    name_of_theschema  = "opk_schema"
+    onwer              = "kojitechs"
+    usage              = true
+    role               = null
+    with_create_object = true
+    with_usage         = true
+    role_name          = "kojitechs"
   }
 ]
-
-db_subnets = ["subnet-00afe21bbbfe0d272", "subnet-098360d8df2c074a6", "subnet-0a8af057d94440f99"]

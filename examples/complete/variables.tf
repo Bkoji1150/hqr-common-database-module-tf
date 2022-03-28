@@ -1,14 +1,15 @@
-variable "vpc_id" {
-  description = "vpc id"
-  type        = string
-  default     = "vpc-0880cca64d0eb856d"
-}
 
 variable "engine_version" {
   description = "Specifies the major version of the engine that this option group should be associated with"
   type        = string
   default     = "13.4"
 }
+variable "myipp" {
+  type = list(any)
+
+}
+# "vpc-0d9d248b937daccc1"
+
 
 variable "line_of_business" {
   description = "Line of Business"
@@ -37,7 +38,13 @@ variable "component_name" {
   type        = string
   default     = "hqr-common-database"
 }
+variable "port" {
+  default = "5444"
+}
 
+variable "app_port" {
+  default = "80"
+}
 variable "db_users" {
   description = "List of all databases"
   type        = list(any)
@@ -144,10 +151,6 @@ variable "aws_account_id" {
   }
 }
 
-variable "db_subnets" {
-  description = ""
-  type        = list(any)
-}
 variable "application_owner" {
   description = "Email Group for the Application owner."
   type        = string

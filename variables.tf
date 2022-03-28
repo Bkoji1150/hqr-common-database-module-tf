@@ -170,9 +170,10 @@ variable "schemas_list_owners" {
   }]
 }
 
-variable "cidr_blocks_sg" {
-  type        = list(any)
+
+variable "vpc_security_group" {
   description = "Provide the cidr block ip to allow connect to db instance"
+  type        = list(any)
 }
 
 variable "databases_created" {
