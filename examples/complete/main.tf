@@ -35,6 +35,86 @@ terraform {
   }
 }
 
+data "terraform_remote_state" "operational_environment" {
+  backend = "s3"
+
+  config = {
+    region = "us-east-1"
+    bucket = "operational.vpc.tf.kojitechs"
+    key    = format("env:/%s/path/env", lower(terraform.workspace))
+  }
+}
+
+
+locals {
+  operational_state   = data.terraform_remote_state.operational_environment.outputs
+  vpc_id              = local.operational_state.vpc_id
+  public_subnet_ids   = local.operational_state.public_subnets
+  private_subnets_ids = local.operational_state.private_subnets
+  public_subnets      = local.operational_state.public_subnet_cidr_block
+}
+
+data "aws_ssm_parameter" "ami" {
+  name = "jenkins-agent-bootstrap-ssh-key"
+}
+
+# Getting subnet cidr
+
+# Create Security db Group
+resource "aws_security_group" "web_sg" {
+  vpc_id      = local.vpc_id
+  name        = format("%s-%s-%s", var.component_name, "ec2", terraform.workspace)
+  description = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)} ec2"
+  ingress {
+    description = "Allow traffic to port from port ${var.app_port}"
+    from_port   = var.app_port
+    to_port     = var.app_port
+    protocol    = "tcp"
+    cidr_blocks = var.myipp
+  }
+
+  egress {
+    description = "Allow all ip and ports outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_security_group" "db_sg" {
+  name        = format("%s-%s-%s", var.component_name, "db-sg", terraform.workspace)
+  description = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)} db"
+  vpc_id      = local.vpc_id
+  ingress {
+    description = "Allow traffic to db port from port ${var.port}"
+    from_port   = var.port
+    to_port     = var.port
+    protocol    = "tcp"
+    cidr_blocks = var.myipp
+  }
+  ingress {
+    description = "Allow traffic to db port from port ${var.port}"
+    from_port   = var.port
+    to_port     = var.port
+    protocol    = "tcp"
+    cidr_blocks = slice(local.public_subnets, 0, 3)
+  }
+  egress {
+    description = "Allow all ip and ports outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 module "required_tags" {
   source = "git::git@github.com:Bkoji1150/kojitechs-tf-aws-required-tags.git"
 
@@ -54,11 +134,26 @@ module "required_tags" {
 }
 
 
+module "ec2_instance_pub" {
+  source = "terraform-aws-modules/ec2-instance/aws"
+
+  name                   = format("%s-%s", var.component_name, "public_instance")
+  ami                    = data.aws_ssm_parameter.ami.value
+  instance_type          = "t2.micro"
+  monitoring             = true
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+  subnet_id              = local.public_subnet_ids[0]
+  iam_instance_profile   = aws_iam_instance_profile.ec2profile.name
+  user_data              = file("${path.module}/app1-install.sh")
+
+}
+
+
 module "rds_module" {
-  source = "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
+  source = "../.." #"git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
 
   tier           = var.tier
-  component_name = format("%s-%s", var.component_name, terraform.workspace)
+  component_name = var.component_name
   engine_version = var.engine_version
   instance_class = var.instance_class
   db_users       = var.db_users
@@ -66,10 +161,10 @@ module "rds_module" {
 
   publicly_accessible = true
   multi_az            = var.multi_az
-  cidr_blocks_sg      = ["0.0.0.0/0"]
-  vpc_id              = var.vpc_id
-  db_subnets          = var.db_subnets
-  db_port             = "5444"
+  vpc_security_group  = [aws_security_group.db_sg.id]
+  vpc_id              = local.vpc_id
+  db_subnets          = slice(local.public_subnet_ids, 0, 3)
+  db_port             = var.port
   schemas_list_owners = var.schemas_list_owners
   db_username         = "kojitechs"
   db_users_privileges = var.db_users_privileges

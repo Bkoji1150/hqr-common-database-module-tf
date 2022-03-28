@@ -94,7 +94,7 @@ resource "aws_db_instance" "postgres_rds" {
   port                   = var.db_port == null ? 5432 : var.db_port
   username               = var.db_username == null ? var.db_engine : var.db_username
   password               = local.secrets["password"]
-  vpc_security_group_ids = [module.Security_module.this[0]]
+  vpc_security_group_ids = var.vpc_security_group
 
   identifier           = format("%s-%s", var.component_name, terraform.workspace)
   skip_final_snapshot  = var.skip_db_snapshot == null ? false : var.skip_db_snapshot
@@ -113,32 +113,34 @@ resource "aws_db_instance" "postgres_rds" {
   }
 }
 
-locals {
-  ingress = {
-    mysql = {
-      from        = local.secrets["port"]
-      to          = local.secrets["port"]
-      protocol    = "tcp"
-      cidr_blocks = var.cidr_blocks_sg
-    },
-    mysql = {
-      from        = local.secrets["port"]
-      to          = local.secrets["port"]
-      protocol    = "tcp"
-      cidr_blocks = var.Another_cidr
-    }
-  }
-}
 
-module "Security_module" {
-  source = "git::git@github.com:Bkoji1150/hqr-security-group.git//Sg"
-
-  vpc_id         = var.vpc_id
-  ingress        = local.ingress
-  description    = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)}"
-  Sg_description = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)} db"
-  Tags           = format("%s-%s-%s", var.component_name, "db-sg", terraform.workspace)
-}
+# Create Security db Group
+#resource "aws_security_group" "db_sg" {
+#  name        = format("%s-%s-%s", var.component_name, "db-sg", terraform.workspace)
+#  description = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)} db"
+#  ingress {
+#    description = "Allow traffic to db port from port ${local.secrets["port"]}"
+#    from_port   = local.secrets["port"]
+#    to_port     = local.secrets["port"]
+#    protocol    = "tcp"
+#    cidr_blocks = var.cidr_blocks_sg
+#  }
+#    ingress {
+#    description = "Allow traffic to db port from port ${local.secrets["port"]}"
+#    from_port   = local.secrets["port"]
+#    to_port     = local.secrets["port"]
+#    protocol    = "tcp"
+#    cidr_blocks = var.app_gd
+#  }
+#  egress {
+#    description = "Allow all ip and ports outbound"
+#    from_port   = 0
+#    to_port     = 0
+#    protocol    = "-1"
+#    cidr_blocks = ["0.0.0.0/0"]
+#  }
+#
+#}
 
 resource "aws_db_subnet_group" "db_subnets" {
   count       = var.create_db_instance ? 1 : 0
