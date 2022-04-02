@@ -130,7 +130,7 @@ db_users_privileges = [
 ```hcl
 
 module "rds_module" {
-  source = "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
+  source = "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git?ref=v1.0.0"
 
   tier           = var.tier
   component_name = format("%s-%s", var.component_name, terraform.workspace)

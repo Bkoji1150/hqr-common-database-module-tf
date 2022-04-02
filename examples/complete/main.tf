@@ -1,4 +1,7 @@
 
+locals {
+  sub = slice(local.public_subnets, 0, 1)
+}
 terraform {
   required_version = "~> 1.1.5"
   required_providers {
@@ -52,37 +55,7 @@ locals {
   public_subnet_ids   = local.operational_state.public_subnets
   private_subnets_ids = local.operational_state.private_subnets
   public_subnets      = local.operational_state.public_subnet_cidr_block
-}
 
-data "aws_ssm_parameter" "ami" {
-  name = "jenkins-agent-bootstrap-ssh-key"
-}
-
-# Getting subnet cidr
-
-# Create Security db Group
-resource "aws_security_group" "web_sg" {
-  vpc_id      = local.vpc_id
-  name        = format("%s-%s-%s", var.component_name, "ec2", terraform.workspace)
-  description = "Allow inbound traffic to ${format("%s-%s", var.component_name, terraform.workspace)} ec2"
-  ingress {
-    description = "Allow traffic to port from port ${var.app_port}"
-    from_port   = var.app_port
-    to_port     = var.app_port
-    protocol    = "tcp"
-    cidr_blocks = var.myipp
-  }
-
-  egress {
-    description = "Allow all ip and ports outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "aws_security_group" "db_sg" {
@@ -101,7 +74,7 @@ resource "aws_security_group" "db_sg" {
     from_port   = var.port
     to_port     = var.port
     protocol    = "tcp"
-    cidr_blocks = slice(local.public_subnets, 0, 3)
+    cidr_blocks = var.subnet_cidr_block
   }
   egress {
     description = "Allow all ip and ports outbound"
@@ -134,23 +107,8 @@ module "required_tags" {
 }
 
 
-module "ec2_instance_pub" {
-  source = "terraform-aws-modules/ec2-instance/aws"
-
-  name                   = format("%s-%s", var.component_name, "public_instance")
-  ami                    = data.aws_ssm_parameter.ami.value
-  instance_type          = "t2.micro"
-  monitoring             = true
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
-  subnet_id              = local.public_subnet_ids[0]
-  iam_instance_profile   = aws_iam_instance_profile.ec2profile.name
-  user_data              = file("${path.module}/app1-install.sh")
-
-}
-
-
 module "rds_module" {
-  source = "../.." #"git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
+  source = "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
 
   tier           = var.tier
   component_name = var.component_name
@@ -158,10 +116,9 @@ module "rds_module" {
   instance_class = var.instance_class
   db_users       = var.db_users
   db_storage     = 50
-
   publicly_accessible = true
   multi_az            = var.multi_az
-  vpc_security_group  = [aws_security_group.db_sg.id]
+  allowed_cidr_blocks = var.myipp
   vpc_id              = local.vpc_id
   db_subnets          = slice(local.public_subnet_ids, 0, 3)
   db_port             = var.port

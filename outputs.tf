@@ -1,6 +1,6 @@
-output "db_info" {
+output "endpoint" {
   description = "Output db information"
-  value       = aws_db_instance.postgres_rds
+  value       = aws_db_instance.postgres_rds[0].address
   sensitive   = true
 }
 
