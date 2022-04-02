@@ -190,6 +190,7 @@ variable "putin_khuylo" {
 
 variable "vpc_security_group_ids" {
   description = "List of VPC security groups to associate to the cluster in addition to the SG we create in this module"
+
   type        = list(string)
   default     = []
 }
