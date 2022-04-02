@@ -40,6 +40,17 @@ variable "component_name" {
   type        = string
 }
 
+variable "name" {
+  description = "Name used across resources created"
+  type        = string
+  default     = ""
+}
+
+variable "create_schema" {
+  description = "Create schema?"
+  type        = bool
+  default     = true
+}
 variable "create_db_instance" {
   description = "Whether to create a database instance"
   type        = bool
@@ -48,7 +59,7 @@ variable "create_db_instance" {
 variable "engine_version" {
   description = "Specifies the major version of the engine that this option group should be associated with"
   type        = string
-  default     = null
+
 }
 
 variable "create_db_option_group" {
@@ -57,11 +68,6 @@ variable "create_db_option_group" {
   default     = true
 }
 
-variable "vpc_id" {
-  description = "vpc id"
-  type        = string
-
-}
 variable "password" {
   description = "Password for the master DB user. Note that this may show up in logs, and it will be stored in the state file"
   type        = string
@@ -170,19 +176,78 @@ variable "schemas_list_owners" {
   }]
 }
 
-
-variable "vpc_security_group" {
-  description = "Provide the cidr block ip to allow connect to db instance"
-  type        = list(any)
+variable "create_database" {
+  description = "Whether cluster should be created (affects nearly all resources)"
+  type        = bool
+  default     = true
 }
 
-variable "Another_cidr" {
-  type        = list(any)
-  description = "Provide the cidr block ip to allow connect to db instance"
-  default  = null
+variable "putin_khuylo" {
+  description = "Do you agree that Putin doesn't respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!"
+  type        = bool
+  default     = true
 }
 
+variable "vpc_security_group_ids" {
+  description = "List of VPC security groups to associate to the cluster in addition to the SG we create in this module"
 
+  type        = list(string)
+  default     = []
+}
+
+variable "create_security_group" {
+  description = "Determines whether to create security group for RDS cluster"
+  type        = bool
+  default     = true
+}
+
+variable "vpc_id" {
+  description = "ID of the VPC where to create security group"
+  type        = string
+  default     = ""
+}
+
+variable "security_group_description" {
+  description = "The description of the security group. If value is set to empty string it will contain cluster name in the description"
+  type        = string
+  default     = null
+}
+
+variable "security_group_tags" {
+  description = "Additional tags for the security group"
+  type        = map(string)
+  default     = {}
+}
+
+variable "allowed_security_groups" {
+  description = "A list of Security Group ID's to allow access to"
+  type        = list(string)
+  default     = []
+}
+
+variable "allowed_cidr_blocks" {
+  description = "A list of CIDR blocks which are allowed to access the database"
+  type        = list(string)
+  default     = []
+}
+
+variable "security_group_egress_rules" {
+  description = "A map of security group egress rule defintions to add to the security group created"
+  type        = map(any)
+  default     = {}
+}
+
+variable "tags" {
+  description = "A map of tags to add to all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "application_owner" {
+  description = "Email Group for the Application owner."
+  type        = string
+  default     = "kojibello058@gmail.com"
+}
 
 variable "databases_created" {
   description = "List of all databases Created by postgres provider!!!"
@@ -191,11 +256,7 @@ variable "databases_created" {
 }
 
 # Required Tags variables
-variable "application_owner" {
-  description = "Email Group for the Application owner."
-  type        = string
-  default     = null
-}
+
 
 variable "builder" {
   description = "Email for the builder of this infrastructure"

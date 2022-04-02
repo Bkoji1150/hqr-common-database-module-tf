@@ -2,7 +2,7 @@
 variable "engine_version" {
   description = "Specifies the major version of the engine that this option group should be associated with"
   type        = string
-  default     = "13.4"
+  default     = "11.12"
 }
 variable "myipp" {
   type = list(any)
@@ -150,6 +150,8 @@ variable "aws_account_id" {
     sbx  = "674293488770"
   }
 }
+
+variable "subnet_cidr_block" {}
 
 variable "application_owner" {
   description = "Email Group for the Application owner."

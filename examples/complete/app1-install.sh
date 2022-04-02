@@ -8,3 +8,5 @@ sudo echo '<h1>Welcome to Kojitechs.com- APP-1</h1>' | sudo tee /var/www/html/in
 sudo mkdir /var/www/html/app1
 sudo echo '<!DOCTYPE html> <html> <body style="background-color:rgb(250, 210, 210);"> <h1>Welcome to Terraform course end to end - APP-1</h1> <p>Terraform Demo</p> <p>Application Version: V1</p> </body></html>' | sudo tee /var/www/html/app1/index.html
 sudo curl http://169.254.169.254/latest/dynamic/instance-identity/document -o /var/www/html/app1/metadata.html
+amazon-linux-extras install postgresql10 vim epel -y
+sudo yum install -y postgresql-server postgresql-devel -y
