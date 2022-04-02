@@ -1,4 +1,5 @@
 
+
 locals {
   master_password        = var.create_db_instance && var.create_random_password ? random_string.master_user_password.result : var.password
   create_db_option_group = var.create_db_option_group && var.db_engine != "postgres"
@@ -11,17 +12,19 @@ locals {
     redshift          = "redshift"
   }
   common_secret_values = {
-    dbname   = var.db_username
-    endpoint = aws_db_instance.postgres_rds[0].address
-    engine   = var.db_engine
+     engine   = var.db_engine
+     host = aws_db_instance.postgres_rds[0].address
+#    username   = var.db_username
+    dbname = "postgres"
     port     = var.db_port
     password = random_string.master_user_password.result
   }
   common_tenable_values = {
     engine   = local.engines_map[var.db_engine]
-    endpoint = aws_db_instance.postgres_rds[0].address
+    host = aws_db_instance.postgres_rds[0].address
+#    username   = var.db_username
+    dbname = "postgres"
     port     = var.db_port
-    dbname   = var.db_username
     password = random_string.master_user_password.result
   }
 }
