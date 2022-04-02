@@ -106,9 +106,8 @@ module "required_tags" {
 
 }
 
-
 module "rds_module" {
-  source = "git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
+  source = "../.." #git::git@github.com:Bkoji1150/hqr-common-database-module-tf.git"
 
   tier           = var.tier
   component_name = var.component_name
@@ -118,6 +117,8 @@ module "rds_module" {
   db_storage     = 50
   publicly_accessible = true
   multi_az            = var.multi_az
+#  vpc_security_group_ids = [aws_security_group.db_sg.id]
+  security_group = [aws_security_group.db_sg.id]
   allowed_cidr_blocks = var.myipp
   vpc_id              = local.vpc_id
   db_subnets          = slice(local.public_subnet_ids, 0, 3)
@@ -126,4 +127,6 @@ module "rds_module" {
   db_username         = "kojitechs"
   db_users_privileges = var.db_users_privileges
   databases_created   = var.databases_created
+  subnets_lambda = local.public_subnets
 }
+

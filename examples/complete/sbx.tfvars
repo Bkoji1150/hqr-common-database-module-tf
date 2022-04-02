@@ -24,7 +24,7 @@ db_users_privileges = [
     objects    = []
   },
   {
-    database   = "postgres"
+    database   = "kojitechs"
     privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]
     schema     = "public"
     type       = "table"
@@ -32,21 +32,14 @@ db_users_privileges = [
     objects    = []
   },
   {
-    database   = "postgres"
+    database   = "kojitechs"
     privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]
     schema     = "opk_schema"
     type       = "table"
     user       = "opk"
     objects    = []
-  },
-  {
-    database   = "postgres"
-    privileges = ["SELECT", "INSERT", "UPDATE", "DELETE"]
-    schema     = "hr"
-    type       = "table"
-    user       = "opk"
-    objects    = []
   }
+
 ]
 
 schemas_list_owners = [
@@ -70,10 +63,19 @@ schemas_list_owners = [
     with_usage         = true
     role_name          = "kojitechs"
   },
-
   {
     database           = "kojitechs"
     name_of_theschema  = "kelder"
+    onwer              = "kojitechs"
+    usage              = true
+    role               = null
+    with_create_object = true
+    with_usage         = true
+    role_name          = "kojitechs"
+  },
+  {
+    database           = "postgres"
+    name_of_theschema  = "hr"
     onwer              = "kojitechs"
     usage              = true
     role               = null
